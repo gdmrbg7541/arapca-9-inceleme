@@ -1961,3 +1961,13 @@ html.ds-ders .ds-ebd > .ds-yon.aktif { background: rgba(250, 204, 21, .14); box-
 .hs-calisma .mc-aksil[hidden] { display: none !important; }
 .hs-calisma .mc-aksil { color: #B45309; }
 .hs-calisma .mc-aksil svg { width: 1.15em; height: 1.15em; }
+/* CEVAP YAZISI İNCE (20.11.2026) — öğretmen: "kitapta yazı olarak açılan tüm cevaplarda yazı bold olmayacak" */
+.ds-vek .cv-yaz b, .yuz > .ds-cevap .ds-ar, .yuz > .ds-cevap .ds-tr, .yuz > .dk-yaz .ds-ar, .yuz > .dk-yaz .ds-tr,
+.yuz > .zs-c > .zs-cv .ds-ar, .yuz > .zs-c > .zs-cv .ds-tr { font-weight: 400 !important; }
+/* GRİ PERDE YOK (20.11.2026) — öğretmen: "sarı vurgu açıldığında sayfanın tümünde hafif bi gri oluyor buna gerek yok" */
+.yuz > .ksv-perde.ksv-karsi { background: transparent !important; }
+.ksv-perde > .ks-vurgu { box-shadow: 0 0 0 7px rgba(245, 158, 11, .30); }
+@keyframes ksVurguNabiz { to { box-shadow: 0 0 0 14px rgba(245, 158, 11, .10); } }
+@keyframes ksVurguGir { from { outline-color: #FDE68A; box-shadow: 0 0 0 22px rgba(245, 158, 11, .45); } }
+/* KELİME AVI (20.11.2026): kelime tek kapsül */
+.ds-vek .cv-kav { border-radius: 999px; }
