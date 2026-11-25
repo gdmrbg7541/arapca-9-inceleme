@@ -466,6 +466,23 @@
        (ya da çift dokunan) kişinin ikinci tıklaması büyütmeyi hemen geri
        alıyordu; ekran bir an yakınlaşıp dönüyor, "yakınlaşmıyor" sanılıyordu. */
     var CIFT_ARALIK = 350, sonBolge = 0;
+    /* DOKUNUNCA BÜYÜT AÇ / KAPA (25.11.2026) — öğretmen: "motordan bi yere dokununca büyüme özelliğini açılıp kapanır yapalım,
+       isteyen açsın ama varsayılan kapalı olsun". Araç çubuğunda «Dokununca büyüt»; bu cihazda hatırlanır. */
+    var KZ_DB = 'kitap_dokunBuyut';
+    function kzDokunBuyut() { try { return localStorage.getItem(KZ_DB) === '1'; } catch (e) { return false; } }
+    (function () {
+      var ip = document.getElementById('tIpucu'); if (!ip || document.getElementById('tDokunBuyut')) return;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'tus'; b.id = 'tDokunBuyut';
+      b.title = 'Sayfaya dokununca o bölgeyi büyüt (aç / kapa)'; b.setAttribute('aria-label', 'Dokununca büyüt');
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.3 15.3 20.5 20.5"/><path d="M10.5 7.6v5.8M7.6 10.5h5.8"/></svg>';
+      function goster() { var a = kzDokunBuyut(); b.classList.toggle('aktif', a); b.setAttribute('aria-pressed', a ? 'true' : 'false'); }
+      goster();
+      b.addEventListener('click', function () {
+        var a = !kzDokunBuyut(); try { localStorage.setItem(KZ_DB, a ? '1' : '0'); } catch (e) { }
+        goster(); try { kkTost(a ? 'Dokununca büyütme açık: bir bölgeye dokun, büyür; yine dokun, küçülür' : 'Dokununca büyütme kapalı (Yaklaş / Uzaklaş düğmeleri ve iki parmak çalışır)'); } catch (e) { }
+      });
+      ip.parentNode.insertBefore(b, ip.nextSibling);
+    })();
     sahne.addEventListener('pointerdown', function (e) {
       if (panelAcik() || tanitimAcik || !kkGezinir(e) || e.button > 0 || e.isPrimary === false) { bolgeDokun = null; return; }
       bolgeDokun = { x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId, h: bolgeHedefi(e) };
@@ -486,8 +503,8 @@
         var kp0 = dsKisimAltta(e.clientX, e.clientY);
         if (kp0) { dsKisimCal(kp0); sonBolge = Date.now(); return; }       /* o kısım çalar ve durur, büyütme yok */
       }
-      if (z.o > 1.02) { if (!e.target.closest(YOKSAY)) { zAyarla(1); sonBolge = Date.now(); } return; }
-      if (d.h && !DS.aktif) { bolgeyiBuyut(d.h); sonBolge = Date.now(); }   /* DERS MODUNDA TEK DOKUNUŞLA BÜYÜTME YOK (03.11.2026) */
+      if (z.o > 1.02) { if (kzDokunBuyut() && !e.target.closest(YOKSAY)) { zAyarla(1); sonBolge = Date.now(); } return; }   /* DOKUNUNCA BÜYÜT: kapalıysa küçültmez */
+      if (d.h && !DS.aktif && kzDokunBuyut()) { bolgeyiBuyut(d.h); sonBolge = Date.now(); }   /* DOKUNUNCA BÜYÜT: varsayılan kapalı */   /* DERS MODUNDA TEK DOKUNUŞLA BÜYÜTME YOK (03.11.2026) */
     });
     kok.addEventListener('pointercancel', function () { bolgeDokun = null; });
 
@@ -6506,6 +6523,7 @@
     function dsKisimYere(o) {                                          /* SARI KUTUYA DOKUNUNCA YAKLAŞ (03.11.2026) */
       try {
         var p = ksKisimlar(o.src)[o.i]; if (!ksVurguVar(p)) return;
+        if (!DS.aktif && !kzDokunBuyut()) return;                      /* DOKUNUNCA BÜYÜT kapalı: kısım çalar, yakınlaşmaz */
         if (DS.aktif) {                                                /* ÖLÇÜLÜ YAKLAŞMA (06.11.2026): küçük kutuya dev yakınlaşma yok */
           var Ly = dsAdimlar(o.s);
           for (var ky = Math.min(DS.i, Ly.length - 1); ky >= 0 && DS.s === o.s; ky--) {
@@ -8409,7 +8427,7 @@
       K.tekSon = Math.max(+p.b + 0.1, +p.s - 0.08);                    /* KISIM İLERİ: sonraki kısmın başına taşmasın (vurgu çalanda kalsın) */
       K.tekI = i;                                                       /* KISIM CEVAP: biten kısım */
       ksDongu();
-      if (!DS.aktif) dsKisimYakin(K, p);                               /* KISMA DOKUNUNCA YAKINLAŞMA (02.11.2026) */
+      if (!DS.aktif && kzDokunBuyut()) dsKisimYakin(K, p);   /* DOKUNUNCA BÜYÜT */                               /* KISMA DOKUNUNCA YAKINLAŞMA (02.11.2026) */
     }
     /* KISMA DOKUNUNCA YAKINLAŞMA (02.11.2026) — öğretmen: "yakınlaştırma varsa o da
        çalışmalı". Ders kapalıyken: sayfanın adımlarında bu sesin kaynak adımından

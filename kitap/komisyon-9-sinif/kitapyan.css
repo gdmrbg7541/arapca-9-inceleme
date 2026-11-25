@@ -291,3 +291,38 @@ html.ds-ders .kz-uzak { display: none !important; }
 .kz-dugmeler .kz-son, .kz-dugmeler .kz-ilk { display: none !important; }
 .kz-cubuk { padding: 9px 0 !important; }
 .kz-dugmeler { margin-top: 8px !important; }
+
+/* YAN ÇUBUK ŞIK (25.11.2026) — ünite yazısı · sayfa çubuğu en altta · şık İleri / Geri */
+.yan-ilerleme .kz-alt { display: flex; flex-direction: column; align-items: stretch; gap: 2px; width: 100%; margin-top: 6px; padding-top: 8px; border-top: 1px solid rgba(31, 36, 48, .08); }
+.yan-ilerleme .kz-alt #sayfaEt { text-align: center; }
+.kz-uniteler button:not(.kz-soz) { height: 40px !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0 4px !important; }
+.kz-uniteler button b { font-size: 14px; font-weight: 700; line-height: 1; }
+.kz-uniteler button small { display: block; font-size: 7.5px; font-weight: 600; line-height: 1; letter-spacing: .5px; text-transform: uppercase; opacity: .7; }
+.kz-uniteler button.kz-soz { height: 40px !important; }
+.kz-dugmeler { gap: 8px !important; }
+.kz-dugmeler .kz-ok { flex-direction: row !important; height: 42px !important; gap: 6px !important; border: 0 !important; border-radius: 13px !important;
+  background: linear-gradient(180deg, #1DB99A 0%, #129276 100%) !important; color: #fff !important; font-size: 14px !important; font-weight: 700 !important; line-height: 1 !important; letter-spacing: .2px;
+  box-shadow: 0 2px 0 #0B6E59, 0 6px 14px -4px rgba(18, 146, 118, .55), inset 0 1px 0 rgba(255, 255, 255, .28) !important;
+  transition: transform .12s ease, box-shadow .12s ease, filter .15s ease; }
+.kz-dugmeler .kz-ok:hover { filter: brightness(1.06); background: linear-gradient(180deg, #22C7A6 0%, #14A083 100%) !important; }
+.kz-dugmeler .kz-ok:active { transform: translateY(2px) scale(1) !important; box-shadow: 0 0 0 #0B6E59, 0 3px 8px -4px rgba(18, 146, 118, .55), inset 0 1px 0 rgba(255, 255, 255, .2) !important; }
+.kz-dugmeler .kz-ok svg { width: 17px !important; height: 17px !important; stroke-width: 3 !important; }
+.kz-dugmeler .kz-geri svg { order: 2; }
+.kz-dugmeler .kz-ok:disabled { background: #EEF1F4 !important; color: #A3ACB9 !important; box-shadow: none !important; filter: none; opacity: 1 !important; }
+
+/* KAREKOD ŞEFFAF (25.11.2026) — öğretmen: "şeffaf olacaklar ve tam karekod üstünde olacaklar, hem karekod görünecek hem
+   tıklanınca bi içeriğin açılacağı": simge / yazı yok, karekod görünür; türünün renginde ince soluk çerçeve */
+.nokta.kz-qr { background: transparent !important; border: 0 !important; box-shadow: none !important; color: transparent !important; padding: 0 !important;
+  border-radius: 7px !important; transform: none !important; animation: none; cursor: pointer; }
+.nokta.kz-qr > svg, .nokta.kz-qr > b, .nokta.kz-qr .ipucu { display: none !important; }
+.nokta.kz-qr::after { content: '' !important; display: block !important; position: absolute; inset: -3px; border-radius: 9px; pointer-events: none;
+  border: 2px solid var(--renk, #16A085); opacity: .38; transition: opacity .18s ease, background-color .18s ease, box-shadow .18s ease; }
+.nokta.kz-qr:hover::after, .nokta.kz-qr:focus-visible::after { opacity: 1; background: color-mix(in srgb, var(--renk, #16A085) 10%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--renk, #16A085) 18%, transparent); }
+.nokta.kz-qr:active::after, .nokta.kz-qr.basili::after { opacity: 1; background: color-mix(in srgb, var(--renk, #16A085) 22%, transparent); }
+.nokta.kz-qr.calan::after, .nokta.kz-qr.md-calan::after { opacity: 1; animation: kzQrNabiz 1.6s ease-in-out infinite; }
+.nokta.kz-qr.calan, .nokta.kz-qr.md-calan { background: transparent !important; animation: none !important; }
+@keyframes kzQrNabiz { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--renk, #16A085) 25%, transparent); } }
+body.ipuclari-kapali .nokta.kz-qr { opacity: 1 !important; }
+body.ipuclari-kapali .nokta.kz-qr::after { opacity: 0; }
+body.ipuclari-kapali .nokta.kz-qr:hover::after { opacity: 1; }

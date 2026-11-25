@@ -62,6 +62,7 @@
       var k = K.kaynak[h.k];
       var b = document.createElement('button');
       b.className = 'nokta n-' + k.tur;
+      if (h.q) b.classList.add('kz-qr');                          /* KAREKOD ŞEFFAF (25.11.2026): karekodun tam üstünde, şeffaf */
       b.style.left = h.x + '%'; b.style.top = h.y + '%';
       b.style.width = h.w + '%'; b.style.height = h.h + '%';
       b.dataset.k = h.k;
@@ -626,4 +627,20 @@
     window.addEventListener('resize', function () { setTimeout(kur, 50); });
     setTimeout(kur, 400);
   })();
+})();
+
+/* YAN ÇUBUK ŞIK (25.11.2026) — öğretmen: "ünite 1-4 rakamlarının altında çok küçük bi şekilde ünite yazsın, ilerleme çizgisi
+   daralt tuşunun üstünde olsun, ileri geri tuşları daha şık olsun" */
+(function () {
+  function kur() {
+    var yi = document.querySelector('.yan-ilerleme'), c = yi && yi.querySelector('.kz-cubuk'), s = yi && yi.querySelector('#sayfaEt');
+    if (!yi || !c) { setTimeout(kur, 200); return; }
+    var alt = document.createElement('div'); alt.className = 'kz-alt';
+    if (s) alt.appendChild(s);
+    alt.appendChild(c); yi.appendChild(alt);                         /* sayfa çubuğu en altta: Daralt'ın üstü */
+    [].forEach.call(yi.querySelectorAll('.kz-uniteler button:not(.kz-soz)'), function (b) {
+      var n = b.textContent; b.innerHTML = '<b>' + n + '</b><small>ünite</small>';
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(kur, 0); }); else setTimeout(kur, 0);
 })();
