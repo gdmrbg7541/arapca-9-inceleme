@@ -727,3 +727,40 @@
   });
   tazele();
 })();
+
+/* KİTAP KENARLARI (25.11.2026) — öğretmen: "sağ ve sol taraftaki fazla sayfa tasarımını daha profesyonel olsun, bu tasarımlar
+   tüm flipbooklarda ortak olacak motora ekleyelim". Açık kitabın iki yanında sayfa destesi: okunan sayfalar bir yanda,
+   kalanlar öbür yanda (sağdan sola kitapta okunan sağda). Kapakta / arka kapakta / tek sayfa görünümünde yok. */
+(function () {
+  if (window.__kitapKenar) return; window.__kitapKenar = 1;
+  var bekle = 0;
+  function kur() {
+    var k = document.querySelector('.kitap'), r = document.getElementById('kaydiracInput');
+    if (!k || !r) return;
+    var el = {};
+    ['sol', 'sag'].forEach(function (y) {
+      var e = k.querySelector(':scope > .kk-kenar.' + y);
+      if (!e) { e = document.createElement('div'); e.className = 'kk-kenar ' + y; e.setAttribute('aria-hidden', 'true'); e.innerHTML = '<i></i>'; k.appendChild(e); }
+      el[y] = e;
+    });
+    var mn = +r.min || 1, mx = +r.max || 1, v = +r.value || mn, n = Math.max(1, mx - mn);
+    var o = Math.max(0, Math.min(1, (v - mn) / n));
+    var M = Math.round(Math.max(6, Math.min(18, 4 + (mx - mn + 1) / 16)));   /* kalın kitap kalın deste */
+    var rtl = (r.getAttribute('dir') || getComputedStyle(r).direction) === 'rtl';
+    var kapak = v <= mn || v >= mx, tek = k.classList.contains('tekli');
+    var okunan = kapak || tek ? 0 : Math.max(2, Math.round(M * o)), kalan = kapak || tek ? 0 : Math.max(2, Math.round(M * (1 - o)));
+    el[rtl ? 'sag' : 'sol'].style.setProperty('--kw', okunan + 'px');
+    el[rtl ? 'sol' : 'sag'].style.setProperty('--kw', kalan + 'px');
+  }
+  function sonra() { clearTimeout(bekle); bekle = setTimeout(kur, 60); }
+  function bagla() {
+    var r = document.getElementById('kaydiracInput'), s = document.getElementById('sayfaEt');
+    if (!r || !document.querySelector('.kitap')) { setTimeout(bagla, 300); return; }
+    r.addEventListener('input', sonra); r.addEventListener('change', sonra);
+    try { if (s) new MutationObserver(sonra).observe(s, { childList: true, characterData: true, subtree: true }); } catch (e) { }
+    try { new MutationObserver(sonra).observe(document.querySelector('.kitap'), { attributes: true, attributeFilter: ['class'] }); } catch (e) { }
+    window.addEventListener('resize', sonra);
+    kur(); setTimeout(kur, 600);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bagla); else bagla();
+})();

@@ -271,3 +271,23 @@ html.ds-ders .kz-uzak { display: none !important; }
 .kz-kalin.sol { right: 100%; border-radius: 3px 0 0 3px; }
 .kz-kalin.sag { left: 100%; border-radius: 0 3px 3px 0; }
 .kitap.tekli .kz-kalin { display: none; }
+
+/* KİTAP KENARLARI (25.11.2026) — açık kitabın iki yanında sayfa destesi (kitapyan.js) */
+.kitap > .kk-kenar { position: absolute; top: 0; bottom: 0; width: var(--kw, 0px); pointer-events: none; z-index: 0;
+  transition: width .35s cubic-bezier(.2, .8, .25, 1); filter: drop-shadow(0 4px 6px rgba(45, 32, 14, .26)); }
+.kitap > .kk-kenar > i { position: absolute; inset: 0; display: block;
+  background:
+    linear-gradient(var(--kk-yon), rgba(64, 48, 24, .34) 0, rgba(64, 48, 24, .10) 22%, rgba(64, 48, 24, 0) 48%, rgba(64, 48, 24, 0) 78%, rgba(64, 48, 24, .16) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 10%, rgba(255, 255, 255, 0) 88%, rgba(70, 52, 25, .14)),
+    repeating-linear-gradient(90deg, #FDFBF6 0 1.1px, #E6E0D3 1.1px 1.5px, #F7F3EA 1.5px 2.5px, #DCD5C6 2.5px 2.9px); }
+.kitap > .kk-kenar.sol { right: 100%; --kk-yon: 270deg; }
+.kitap > .kk-kenar.sag { left: 100%; --kk-yon: 90deg; }
+.kitap > .kk-kenar.sol > i { border-radius: 2px 0 0 2px; clip-path: polygon(0 2px, 100% 0, 100% 100%, 0 calc(100% - 1px)); }
+.kitap > .kk-kenar.sag > i { border-radius: 0 2px 2px 0; clip-path: polygon(0 0, 100% 2px, 100% calc(100% - 1px), 0 100%); }
+.kitap.tekli > .kk-kenar { display: none; }
+.kz-kalin { display: none !important; }   /* Komisyon 9'daki ilk deneme */
+@media print { .kitap > .kk-kenar { display: none; } }
+/* İLK / SON YOK (25.11.2026) — öğretmen: "sidebar kısmında ilk ve son tuşları olmasın, ilerleme çizgisi bu tuşlara binmesin" */
+.kz-dugmeler .kz-son, .kz-dugmeler .kz-ilk { display: none !important; }
+.kz-cubuk { padding: 9px 0 !important; }
+.kz-dugmeler { margin-top: 8px !important; }
