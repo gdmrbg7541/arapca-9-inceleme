@@ -230,3 +230,44 @@
    (02.10.2026). Renk :hover ile aynı; açık temada kitaptema.css eziyor. */
 .ok.es-vurgu { background: var(--gold); color: #221503 }
 .ok.es-basili { filter: brightness(.93) }
+/* YAN ÇUBUK GENİŞ · SAYFA ÇUBUĞU (25.11.2026) — öğretmen: "sol sidebar menüsü daha geniş olsun ve sayfalar için var olan
+   ilerleme çizgisinde daha kolay ilerlenebilsin, sayfa ilerleme çubuğunun orada da ileri geri tuşu olsun" */
+@media (min-width: 760px) {
+  html.yanli { --yan: 240px; }
+  html.yanli.dar { --yan: var(--yan-dar); }
+  html.yanli .yan-ilerleme .konum { font-size: 13px; }
+  html.yanli .yan-ilerleme .kaydirac .sayac { font-size: 15px; font-weight: 700; }
+  html.yanli.dar .kz-ok, html.yanli.dar .kz-uniteler { display: none; }
+}
+.kz-cubuk { display: flex; align-items: center; gap: 6px; width: 100%; }
+.kz-cubuk input[type=range] { flex: 1 1 auto !important; width: auto !important; min-width: 0; height: 12px !important; border-radius: 99px; cursor: pointer;
+  background: linear-gradient(270deg, #16A085 var(--dolu, 0%), #D5DBE3 var(--dolu, 0%)) !important; }
+.kz-cubuk input[type=range]::-webkit-slider-thumb { width: 26px !important; height: 26px !important; border-width: 3px; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); }
+.kz-cubuk input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-width: 3px; }
+.kz-ok { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 11px; border: 1px solid rgba(31, 36, 48, .14); background: #fff;
+  color: #1F2430; display: grid; place-items: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.kz-ok:hover { background: #E8F6F2; border-color: #16A085; color: #0E7C66; }
+.kz-ok:active { transform: scale(.94); }
+.kz-ok:disabled { opacity: .35; cursor: default; }
+.kz-ok svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.kz-uniteler { display: flex; flex-wrap: wrap; gap: 5px; width: 100%; margin-top: 2px; }
+.kz-uniteler button { flex: 1 1 0; min-width: 32px; height: 32px; padding: 0 6px; border-radius: 9px; border: 1px solid rgba(31, 36, 48, .14);
+  background: #fff; color: #4B5563; font: 700 12.5px/1 inherit; cursor: pointer; touch-action: manipulation; }
+.kz-uniteler button.kz-soz { flex: 2 1 0; }
+.kz-uniteler button.acik { background: #16A085; border-color: #16A085; color: #fff; }
+/* SES ŞERİDİ SAYFAYI ÖRTMEZ · İLK / SON · YAKINLAŞMADAN ÇIKIŞ · KİTAP KALINLIĞI (25.11.2026) */
+html.kz-calar .sahne { bottom: var(--kz-alt) !important; transition: bottom .25s ease; }
+.kz-dugmeler { display: flex; gap: 5px; width: 100%; }
+.kz-dugmeler .kz-ok { flex: 1 1 0; width: auto; height: 42px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font: 700 10px/1 inherit; color: #374151; }
+.kz-dugmeler .kz-ok svg { width: 18px; height: 18px; }
+.kz-uzak { position: fixed; top: 12px; right: 14px; z-index: 60; width: 48px; height: 48px; border-radius: 14px; border: 0; background: #1F2430; color: #fff;
+  display: none; place-items: center; cursor: pointer; box-shadow: 0 6px 18px rgba(0, 0, 0, .25); touch-action: manipulation; }
+.kz-uzak svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+.sahne.yakin ~ .kz-uzak { display: grid; }
+html.ds-ders .kz-uzak { display: none !important; }
+.kz-kalin { position: absolute; top: 3px; bottom: -3px; width: var(--kw, 0px); pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(90deg, #FFFDF8 0 2px, #B8AC98 2px 3px); box-shadow: 0 3px 8px rgba(60, 40, 20, .28); transition: width .3s ease; }
+.kz-kalin.sol { right: 100%; border-radius: 3px 0 0 3px; }
+.kz-kalin.sag { left: 100%; border-radius: 0 3px 3px 0; }
+.kitap.tekli .kz-kalin { display: none; }

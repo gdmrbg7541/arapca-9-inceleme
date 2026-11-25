@@ -67,7 +67,7 @@
       b.dataset.k = h.k;
       b.title = k.ad + (k.tur === 'eba' ? ' — EBA’da açılır (internet gerekir)' : '');
       b.setAttribute('aria-label', k.ad);
-      b.innerHTML = SVG[k.tur] + '<b>' + (k.tur === 'eba' ? 'EBA' : (TUR_AD[k.tur] + ' ' + k.no)) + '</b>';
+      b.innerHTML = SVG[k.tur] + '<b>' + (k.tur === 'eba' ? (k.et || 'EBA') : (TUR_AD[k.tur] + ' ' + k.no)) + '</b>';
       b.addEventListener('click', function (e) { e.stopPropagation(); ac(h.k); });
       // dokunmatik geri bildirim: basılır basılmaz renklenir, kısa titreşim
       b.addEventListener('pointerdown', function (e) {
@@ -527,4 +527,103 @@
     setTimeout(function () { tost('Kaldığınız sayfadan açıldı: ' + (etiket(SON) || SON) + ' — kapağa dönmek için Home tuşu', 3800); }, 600);
   }
   if (!s && !(SON > 1)) setTimeout(function () { tost('Sayfa çevirmek için sayfanın kenarına dokunun, parmakla sürükleyin ya da oklara basın', 4200); }, 700);
+
+  /* SAYFA ÇUBUĞU OKLARI + ÜNİTE DÜĞMELERİ (25.11.2026) — öğretmen: "sayfa ilerleme çubuğunun orada da ileri geri tuşu
+     olsun". Çubuğun iki yanında geri / ileri (basılı tutunca sürer); altında ünite düğmeleri. */
+  (function () {
+    var inp = $('#kaydiracInput'); if (!inp || inp.parentNode.classList.contains('kz-cubuk')) return;
+    var sar = document.createElement('div'); sar.className = 'kz-cubuk';
+    function dug(cls, ad, d, is) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'kz-ok ' + cls; b.title = ad; b.setAttribute('aria-label', ad);
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"/></svg>';
+      var t1 = null, t2 = null, sur = false;
+      function bit() { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; }
+      b.addEventListener('pointerdown', function () { sur = false; bit(); t1 = setTimeout(function () { sur = true; t2 = setInterval(is, 260); }, 450); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (o) { b.addEventListener(o, bit); });
+      b.addEventListener('click', function () { if (!sur) is(); sur = false; });
+      return b;
+    }
+    /* sağdan sola kitap: çubukta 1. sayfa sağda → sağdaki düğme geri, soldaki ileri */
+    var ileri = dug('kz-ileri', 'Sonraki sayfa', 'M15 5l-7 7 7 7', function () { flip.ileri(); });
+    var geri = dug('kz-geri', 'Önceki sayfa', 'M9 5l7 7-7 7', function () { flip.geri(); });
+    inp.parentNode.insertBefore(sar, inp);
+    var son = dug('kz-son', 'Son sayfa', 'M18 5l-7 7 7 7M12 5l-7 7 7 7', function () { flip.git(TOPLAM); });   /* İLK / SON (25.11.2026) */
+    var ilk = dug('kz-ilk', 'İlk sayfa (kapak)', 'M6 5l7 7-7 7M12 5l7 7-7 7', function () { flip.git(1); });
+    [[son, 'Son'], [ileri, 'İleri'], [geri, 'Geri'], [ilk, 'İlk']].forEach(function (x) { var s = document.createElement('span'); s.textContent = x[1]; x[0].appendChild(s); });
+    sar.appendChild(inp);
+    var dz = document.createElement('div'); dz.className = 'kz-dugmeler';
+    dz.appendChild(son); dz.appendChild(ileri); dz.appendChild(geri); dz.appendChild(ilk);
+    sar.parentNode.insertBefore(dz, sar.nextSibling);
+    var U = (K.uniteler || []).filter(function (x) { return x && x.bas; });
+    if (U.length) {
+      var ub = document.createElement('div'); ub.className = 'kz-uniteler';
+      U.forEach(function (x) {
+        if (!x.no && !/s[öo]zl[üu]k/i.test(x.ad || '')) return;
+        var b = document.createElement('button'); b.type = 'button';
+        b.textContent = x.no ? String(x.no) : 'Sözlük'; if (!x.no) b.className = 'kz-soz';
+        b.title = x.no ? x.no + '. Ünite: ' + x.ad + ' (s. ' + x.bas + ')' : x.ad + ' (s. ' + x.bas + ')';
+        b.dataset.bas = x.bas; b.dataset.son = x.son;
+        b.addEventListener('click', function () { sayfayaGit(+x.bas); });
+        ub.appendChild(b);
+      });
+      dz.parentNode.insertBefore(ub, dz.nextSibling);
+      function isaretle() {
+        var d = sonDurum; if (!d) return;
+        var pr = basili(d.aktif), pr2 = d.sol ? basili(d.sol) : pr;
+        [].forEach.call(ub.children, function (b) { var a = +b.dataset.bas, s = +b.dataset.son; b.classList.toggle('acik', (pr >= a && pr <= s) || (pr2 >= a && pr2 <= s)); });
+        geri.disabled = ilk.disabled = !!d.ilk; ileri.disabled = son.disabled = !!d.son;
+      }
+      inp.addEventListener('input', isaretle);
+      try { new MutationObserver(isaretle).observe($('#sayfaEt'), { childList: true, characterData: true, subtree: true }); } catch (e) { }
+      setTimeout(isaretle, 300);
+    }
+  })();
+
+  /* SES ŞERİDİ SAYFAYI ÖRTMEZ (25.11.2026) — öğretmen: "aşağıdaki ses şeridi sayfayı engellemesin, ekran çözünürlüğü hd olan
+     bilgisayarlarda sıkıntı oluyor": ses çubuğu açıkken sahnenin altı çubuk kadar kısalır, kitap çubuğun üstünde kalır. */
+  (function () {
+    var cal = $('#calar'); if (!cal) return; var son = -1;
+    function olc() {
+      var h = 0;
+      try {
+        if (!cal.hidden && getComputedStyle(cal).display !== 'none') {
+          var r = cal.getBoundingClientRect();
+          if (r.height > 0 && r.top > window.innerHeight * 0.45) h = Math.ceil(window.innerHeight - r.top + 6);
+        }
+      } catch (e) { }
+      if (Math.abs(h - son) < 3) return; son = h;
+      document.documentElement.style.setProperty('--kz-alt', h + 'px');
+      document.documentElement.classList.toggle('kz-calar', h > 0);
+      setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) { } }, 280);
+    }
+    try { new MutationObserver(function () { setTimeout(olc, 30); }).observe(cal, { attributes: true, childList: true, subtree: true }); } catch (e) { }
+    window.addEventListener('resize', function () { setTimeout(olc, 60); });
+    setInterval(olc, 1200);
+  })();
+  /* YAKINLAŞMADAN ÇIKIŞ (25.11.2026) — öğretmen: "Tıklama ile herhangi bir yeri zoomlayınca sadece esc ile çıkış yapılıyor,
+     kapatma ikonu eklenebilir" */
+  (function () {
+    var sh = document.querySelector('.sahne'); if (!sh || document.getElementById('kzUzak')) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'kzUzak'; b.className = 'kz-uzak';
+    b.title = 'Uzaklaş (Esc)'; b.setAttribute('aria-label', 'Uzaklaş');
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    b.addEventListener('click', function () { try { Z.sifirla(); } catch (e) { } });
+    sh.parentNode.insertBefore(b, sh.nextSibling);
+  })();
+  /* KİTAP KALINLIĞI (25.11.2026) — öğretmen: "kitap kalınlığını temsil eden sağ ve sol kısımlarda kitap alt sayfa kenarları
+     gösteren efekt": okunan sayfalar sağda (sağdan sola kitap), kalanlar solda birikir. */
+  (function () {
+    function kur() {
+      var k = document.querySelector('.kitap'); if (!k) return;
+      ['sol', 'sag'].forEach(function (y) { if (!k.querySelector(':scope > .kz-kalin.' + y)) { var e = document.createElement('div'); e.className = 'kz-kalin ' + y; e.setAttribute('aria-hidden', 'true'); k.appendChild(e); } });
+      var d = sonDurum, o = d ? Math.max(0, Math.min(1, (d.aktif - 1) / Math.max(1, TOPLAM - 1))) : 0, M = 16;
+      var oku = Math.round(M * o), kal = Math.round(M * (1 - o));
+      var sol = k.querySelector(':scope > .kz-kalin.sol'), sag = k.querySelector(':scope > .kz-kalin.sag');
+      if (sag) sag.style.setProperty('--kw', (d && d.ilk ? 0 : Math.max(2, oku)) + 'px');
+      if (sol) sol.style.setProperty('--kw', (d && d.son ? 0 : Math.max(2, kal)) + 'px');
+    }
+    try { new MutationObserver(kur).observe($('#sayfaEt'), { childList: true, characterData: true, subtree: true }); } catch (e) { }
+    window.addEventListener('resize', function () { setTimeout(kur, 50); });
+    setTimeout(kur, 400);
+  })();
 })();

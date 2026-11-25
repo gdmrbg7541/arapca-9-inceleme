@@ -1971,3 +1971,14 @@ html.ds-ders .ds-ebd > .ds-yon.aktif { background: rgba(250, 204, 21, .14); box-
 @keyframes ksVurguGir { from { outline-color: #FDE68A; box-shadow: 0 0 0 22px rgba(245, 158, 11, .45); } }
 /* KELİME AVI (20.11.2026): kelime tek kapsül */
 .ds-vek .cv-kav { border-radius: 999px; }
+/* ETKİNLİK ODAĞI (25.11.2026): ders açıkken yalnız o etkinliğin bölümü */
+.yuz > .ds-odak { position: absolute; left: 0; right: 0; z-index: 19; pointer-events: none; background: rgba(241, 245, 249, .96);
+  animation: dsOdakGir .35s ease-out both; }
+.yuz > .ds-odak.ds-odak-ust { box-shadow: 0 6px 14px -6px rgba(15, 23, 42, .25); }
+.yuz > .ds-odak.ds-odak-alt { box-shadow: 0 -6px 14px -6px rgba(15, 23, 42, .25); }
+.yuz > .ds-odak.ds-odak-tam { background: rgba(241, 245, 249, .985); }
+@keyframes dsOdakGir { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .yuz > .ds-odak { animation: none; } }
+/* EŞLEŞTİRME SEÇEREK (25.11.2026) */
+.ds-cvd > i.dv-es.dv-secili { outline: 3px solid #F59E0B; outline-offset: 2px; background: rgba(245, 158, 11, .22) !important; border-radius: 8px; }
+.ds-cvd > i.dv-es.dv-yanlis { outline: 3px solid #DC2626; outline-offset: 2px; background: rgba(220, 38, 38, .14) !important; border-radius: 8px; }

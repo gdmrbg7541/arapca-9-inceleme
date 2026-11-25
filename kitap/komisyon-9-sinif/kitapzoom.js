@@ -209,6 +209,7 @@
       z.x = Math.max(-mx, Math.min(mx, z.x));
       z.y = Math.max(-my, Math.min(my, z.y));
       if (flip.tekli) sayfayaSinirla();
+      if (z.odak) { try { z.odak(); } catch (e) { } }   /* ETKİNLİK ODAĞI: bölümün içinde */
     }
     /* TEK SAYFADA görüntü SAYFANIN içinde kalır (17.10.2026): telefonda sayfa
        sahneyi dikeyde doldurmuyor; üst/alt bölge büyütülünce ya da
@@ -3056,10 +3057,16 @@
       if (!T.oynadi && Math.abs(e.clientX - T.x) + Math.abs(e.clientY - T.y) < 6) return;
       e.preventDefault();
       if (!T.oynadi) { T.oynadi = true; p.classList.add('kk-tasiniyor'); p.classList.remove('kk-yolver'); KK.yolver = false; }
-      var sr = sahne.getBoundingClientRect(), k = kkKenar(e.clientX - sr.left, sr.width);
-      p.classList.toggle('kk-dikey', !!k);
+      /* KALEM ŞERİDİ SAKİN (25.11.2026) — öğretmen: "Kalem araçlarını ekranda taşırken otomatik olarak dikey yatay veya iki
+         sütun tek sütun arasında sürekli geçiş yapıyor": kenara gelince 0,3 sn sonra dikey, kenardan iyice uzaklaşınca yatay;
+         dikey sığmıyorsa bu taşımada bir daha denenmez. */
+      var sr = sahne.getBoundingClientRect(), xx = e.clientX - sr.left, kh = kkKenar(xx, sr.width), km = Math.max(48, Math.min(96, sr.width * 0.06)), k;
+      if (T.k) k = (T.k === 'sol' ? xx < km + 80 : xx > sr.width - km - 80) ? T.k : '';
+      else if (kh && !T.uzun) { if (T.kzk !== kh) { T.kzk = kh; T.kz = Date.now(); } k = Date.now() - T.kz > 300 ? kh : ''; }
+      else { T.kzk = ''; k = ''; }
+      if (!!k !== p.classList.contains('kk-dikey')) p.classList.toggle('kk-dikey', !!k);
       var w = p.offsetWidth, h = p.offsetHeight;
-      if (k && h > sr.height - 16) { p.classList.remove('kk-dikey'); w = p.offsetWidth; h = p.offsetHeight; }
+      if (k && h > sr.height - 16) { p.classList.remove('kk-dikey'); w = p.offsetWidth; h = p.offsetHeight; T.uzun = true; k = ''; }
       var g = T.t, gx = g.offsetLeft + g.offsetWidth / 2, gy = g.offsetTop + g.offsetHeight / 2;
       var P = 8, maxX = Math.max(P, sr.width - w - P), maxY = Math.max(P, sr.height - h - P);
       var x = k === 'sol' ? P : (k === 'sag' ? maxX : e.clientX - sr.left - gx);
@@ -4181,7 +4188,7 @@
       dsCvBirimler(Q).forEach(function (u, r) {
         var m = /^(\d+):(p?)(\d+)$/.exec(u.k), q = Q[+m[1]], X = q.x || [];
         if (q.t === 'pick' && dsKav(q)) return;                         /* KELİME AVI: harflerde vurgu yok */
-        if (m[2]) { var e = q.p[+m[3]]; R.push({ b: r, x: [X[e[0]], X[e[1]]] }); } else R.push({ b: r, x: [X[+m[3]]] });
+        if (m[2]) { var e = q.p[+m[3]]; R.push({ b: r, es: 1, x: [X[e[0]], X[e[1]]] }); } else R.push({ b: r, x: [X[+m[3]]] });
       });
       Q.forEach(function (q) { if (q && q.t === 'pick' && !dsKav(q)) (q.x || []).forEach(function (x, j) { if (x && (q.ok || []).indexOf(j) < 0) R.push({ b: 'y', x: [x] }); }); });
       return R;
@@ -4191,7 +4198,7 @@
       var o = document.createElement('div');
       o.className = 'ds-dv ds-cvd dv-' + (/^(dalga|nabiz|isik|cerceve)$/.test(a.av || '') ? a.av : 'dalga');
       o.setAttribute('data-cvd', String(j)); o.setAttribute('aria-hidden', 'true');
-      dsCvNoktalar(Q).forEach(function (p) {
+      dsCvNoktalar(Q).filter(function (p) { return !p.es; }).forEach(function (p) {   /* EŞLEŞTİRME: uçlar aşağıda */
         p.x.forEach(function (r) {
           if (!r) return;
           var e = document.createElement('i'), pd = 0.35;
@@ -4230,7 +4237,48 @@
           o.appendChild(e);
         });
       });
+      /* EŞLEŞTİRME SEÇEREK (25.11.2026) — öğretmen: "eşleştirme alıştırmasında yanlış şık işaretlense dahi uyarı çıkmıyor.
+         yani öğretmen cevap olarak ta kullanabilir sayfayı bi öğrenciye de kullandırtabilir". Her uç ayrı: önce bir uca, sonra
+         öbür uca dokunulur; doğru eşse çizgi çizilir, yanlışsa iki uçta ✗ + uyarı sesi; aynı sütunda başka uç seçimi değiştirir. */
+      dsEsNoktalar(Q).forEach(function (E) {
+        var e = document.createElement('i'), pd = 0.35, r = E.r;
+        e.style.left = (r[0] - pd) + '%'; e.style.top = (r[1] - pd) + '%'; e.style.width = (r[2] + 2 * pd) + '%'; e.style.height = (r[3] + 2 * pd) + '%';
+        e.className = 'dv-dok dv-es'; e.setAttribute('data-es', E.k);
+        e.addEventListener('pointerdown', function (ev) { ev.stopPropagation(); e._dv = { x: ev.clientX, y: ev.clientY, t: Date.now() }; });
+        e.addEventListener('click', function (ev) {
+          ev.preventDefault(); ev.stopPropagation();
+          var b0 = e._dv; e._dv = null;
+          if (b0 && (Math.hypot(ev.clientX - b0.x, ev.clientY - b0.y) > 12 || Date.now() - b0.t > 900)) return;
+          if (kkYanki(ev)) return;
+          var S = o._es;
+          if (!S) { o._es = { E: E, el: e }; e.classList.add('dv-secili'); return; }
+          S.el.classList.remove('dv-secili'); o._es = null;
+          if (S.el === e) return;
+          var pr = null; E.ps.forEach(function (x) { if (x.ot === S.E.k) pr = x; });
+          if (pr) { if (dsCvL(s, j).indexOf(pr.b) < 0) { dsCvAc(s, j, pr.b, true); try { dkSes(true); } catch (x) { } } return; }
+          if (Math.abs((S.E.r[0] + S.E.r[2] / 2) - (r[0] + r[2] / 2)) < Math.min(S.E.r[2], r[2]) * 0.5) { o._es = { E: E, el: e }; e.classList.add('dv-secili'); return; }
+          [S.el, e].forEach(function (x) {
+            x.insertAdjacentHTML('beforeend', dsDvIsaretSvg('carpi')); x.classList.add('dv-yanlis');
+            setTimeout(function () { var v = x.querySelector('.dvm'); if (v) x.removeChild(v); x.classList.remove('dv-yanlis'); }, 1200);
+          });
+          try { dkSes(false); } catch (x) { }
+        });
+        o.appendChild(e);
+      });
       y.appendChild(o);
+    }
+    function dsEsNoktalar(Q) {                                          /* eşleştirmenin uçları: {k, r, ps:[{b, ot}]} */
+      var ES = {}, L = [];
+      dsCvBirimler(Q).forEach(function (u, r) {
+        var m = /^(\d+):p(\d+)$/.exec(u.k); if (!m) return;
+        var q = Q[+m[1]], e = q && q.p && q.p[+m[2]], X = (q && q.x) || []; if (!e) return;
+        [0, 1].forEach(function (z) {
+          var k = m[1] + ':' + e[z]; if (!X[e[z]]) return;
+          if (!ES[k]) { ES[k] = { k: k, r: X[e[z]], ps: [] }; L.push(ES[k]); }
+          ES[k].ps.push({ b: r, ot: m[1] + ':' + e[1 - z] });
+        });
+      });
+      return L;
     }
     function dsCvVurguKatman(s, a, j, ac, i, m) {                      /* dsKatmanlar: kendi adımında vurgu; geçince hepsi açık */
       var y = kkYuz(s); if (!y || !a || a.t !== 'cevap') return;
@@ -5973,6 +6021,8 @@
     function dsZincir(s, i, onceI) {                                 /* ileri: sonraki adım öncekiyle / öncekinden sonra */
       if (dsIzleyen() || !(i > onceI)) return;
       var L = dsAdimlar(s), n = L[i + 1]; if (!n) return;
+      var aE = L[i], QE = aE && aE.t === 'cevap' && dsCvMod(aE) ? dsCevapVeri(aE) : null;   /* EŞLEŞTİRME BEKLER (25.11.2026): eşleştirme bitmeden «birlikte» adım açılmaz */
+      if (QE && QE.some(function (q) { return q && q.t === 'match'; }) && dsCvL(s, i).length < dsCvN(aE)) return;
       if (n.bas === 'ile') { dsAdimaGit(i + 1, true); return; }
       if (n.bas === 'sonra') {
         var gk = Math.max(0, Math.min(60, +n.gk || 0));
@@ -6683,7 +6733,79 @@
       }
       dsCpCiz(j);
     }
+    /* ETKİNLİK ODAĞI (25.11.2026) — öğretmen: "Her alıştırmanın/bölümün üzerine tıkladığımızda sadece orası bir bölüm
+       halinde ekrana gelse daha iyi olur. yani diğer etkinlikler ve sayfalar arasında kayma olmasın". Ders açıkken
+       geçerli adımın etkinliği (eb'den sonraki eb'ye dek) bir bölüm: yönergesi, bantları, cevap yerleri, vurgu yerleri.
+       Bölümün dışı (sayfanın üstü / altı, karşı sayfa) .ds-odak örtüsüyle kapanır; sinirla() görüntüyü bölümün içinde
+       tutar (z.odak). Sınıf Ekranı izleyeninde yok. */
+    function dsOdakAlan(s, i) {
+      var G = dsEtkinlikler(s), g = null;
+      G.forEach(function (x) { if (i >= x.bas && i <= x.son) g = x; });
+      if (!g) return null;
+      var L = dsAdimlar(s), y1 = Infinity, y2 = -Infinity;
+      function ek(a, b) { a = +a; b = +b; if (isFinite(a) && isFinite(b) && b > a) { y1 = Math.min(y1, a); y2 = Math.max(y2, b); } }
+      if (g.eb && isFinite(+g.eb.y) && g.eb.y !== null && g.eb.y !== '') ek(+g.eb.y - 3, +g.eb.y + 3);
+      try { var yn = dsYonerge(s, g); if (yn) ek(yn.y1, yn.y2); } catch (e) { }
+      for (var k = g.bas; k <= g.son; k++) {
+        var a = L[k]; if (!a) continue;
+        if (dsBantVar(a)) ek(a.y1, a.y2);
+        if (a.t === 'cevap' && a.ky1 != null) ek(a.ky1, a.ky2);
+        if (a.t === 'dv') { try { dsDvAlan(a).forEach(function (q) { ek(q.y1, q.y2); }); } catch (e) { } }
+      }
+      if (!(y2 > y1)) return null;
+      y1 = Math.max(0, y1 - 1); y2 = Math.min(100, y2 + 1);
+      if (y1 < 4 && y2 > 96) return null;                              /* bütün sayfa: örtü yok */
+      return { s: s, y1: y1, y2: y2 };
+    }
+    /* SES ŞERİDİ SAYFAYI ÖRTMEZ (25.11.2026): sahne ses çubuğu kadar kısalınca (uygulama.js) ders modunun yakınlaşması
+       yeni boya göre yeniden kurulur. */
+    window.addEventListener('resize', function () {
+      clearTimeout(DS_OD.rt); DS_OD.rt = setTimeout(function () {
+        if (!DS.aktif || dsIzleyen() || DS.i < 0) return;
+        var L = dsAdimlar(DS.s);
+        for (var k = Math.min(DS.i, L.length - 1); k >= 0; k--) {
+          var a = L[k]; if (!a || a.t === 'eb') break;
+          if (a.t === 'cevap') { var ub = dsCevapBandi(DS.s, a, k); if (ub) { dsYakinlas(DS.s, ub); return; } continue; }
+          if (a.t === 'yakin' || dsBantVar(a)) { dsYakinlas(DS.s, a); return; }
+        }
+      }, 160);
+    });
+    var DS_OD = { imza: '', kur: 0 };
+    function dsOdakKur() {
+      if (DS_OD.kur) return; DS_OD.kur = 1;
+      try {
+        var o = (DS.aktif && !dsIzleyen() && DS.i >= 0) ? dsOdakAlan(DS.s, DS.i) : null;
+        var gor = kkGorunen(), imza = o ? o.s + ':' + o.y1 + ':' + o.y2 + '|' + gor.join(',') : '';
+        if (imza === DS_OD.imza && (!o || document.querySelector('.yuz > .ds-odak'))) return;
+        DS_OD.imza = imza;
+        [].forEach.call(document.querySelectorAll('.yuz > .ds-odak'), function (e) { e.parentNode.removeChild(e); });
+        document.documentElement.classList.toggle('ds-odakli', !!o);
+        if (!o) { z.odak = null; return; }
+        function ortu(y, a, b) {
+          var e = document.createElement('div'); e.className = 'ds-odak'; e.setAttribute('aria-hidden', 'true');
+          e.style.top = a + '%'; e.style.height = (b - a) + '%'; y.appendChild(e); return e;
+        }
+        gor.forEach(function (s) {
+          var y = kkYuz(s); if (!y) return;
+          if (s !== o.s) { ortu(y, 0, 100).classList.add('ds-odak-tam'); return; }
+          if (o.y1 > 0.5) ortu(y, 0, o.y1).classList.add('ds-odak-ust');
+          if (o.y2 < 99.5) ortu(y, o.y2, 100).classList.add('ds-odak-alt');
+        });
+        z.odak = function () {                                          /* görüntü bölümün içinde */
+          if (!DS.aktif || z.o <= 1.001) return;
+          var g = dsSayfaKutu(o.s), oo = z.o; if (!(g.en > 0 && g.boy > 0)) return;
+          var yw = g.w / (2 * oo), yh = g.h / (2 * oo);
+          var cx = g.w / 2 - z.x / oo, cy = g.h / 2 - z.y / oo;
+          var ry1 = g.y + g.boy * o.y1 / 100, ry2 = g.y + g.boy * o.y2 / 100;
+          cx = g.en >= 2 * yw ? Math.max(g.x + yw, Math.min(g.x + g.en - yw, cx)) : g.x + g.en / 2;
+          cy = ry2 - ry1 >= 2 * yh ? Math.max(ry1 + yh, Math.min(ry2 - yh, cy)) : (ry1 + ry2) / 2;
+          z.x = (g.w / 2 - cx) * oo; z.y = (g.h / 2 - cy) * oo;
+        };
+        var ox = z.x, oy = z.y; sinirla(); if (ox !== z.x || oy !== z.y) zUygula(true);
+      } finally { DS_OD.kur = 0; }
+    }
     function dsDurumBildir() {
+      try { dsOdakKur(); } catch (e) { }                               /* ETKİNLİK ODAĞI */
       try { dsOkIpucu(false); } catch (e) { }                          /* OK İPUCU */
       try { dsCpGuncelle(); } catch (e) { }                            /* CEVAP PANELİ */
       try { dsCvOto(); } catch (e) { }                                 /* CEVAP ELLE */
