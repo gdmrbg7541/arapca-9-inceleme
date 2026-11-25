@@ -4047,6 +4047,7 @@
       var o = Math.max(ENAZ, Math.min(ENCOK, Math.max(og, ob)));
       if (bh * o > g.h * 0.9) o = Math.max(ENAZ, Math.min(o, g.h * 0.9 / Math.max(1, bh)));   /* ZOOM MERKEZ (25.11.2026): bant hep bütünüyle sığar */
       if (bw * o > g.w * 0.97) o = Math.max(ENAZ, Math.min(o, g.w * 0.97 / Math.max(1, bw)));   /* UZUN BANT (12.11.2026): izlenecek ses kısmı yoksa bandın tamamı sığsın */
+      o = Math.max(ENAZ, Math.min(ENCOK, Math.min(g.w * 0.97 / Math.max(1, bw), g.h * 0.9 / Math.max(1, bh))));   /* SEÇİLEN ALAN (25.11.2026): seçilen alanın tamamı ekranı doldurur */
       if (+a.yk > 0) o = Math.max(ENAZ, Math.min(ENCOK, o * (+a.yk) / 100));   /* YAKINLIK ELLE (12.11.2026): tezgâhta ayarlanan oran */
       var ox = g.x + g.en / 2;                                           /* yatay: sayfa ortası */
       if (o > og + 0.05) {
