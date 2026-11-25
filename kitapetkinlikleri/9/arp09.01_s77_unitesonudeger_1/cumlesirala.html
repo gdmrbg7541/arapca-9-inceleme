@@ -727,10 +727,10 @@ const activitiesData = [
     },
     { 
         s: [
-            "أَنا مُدَرِّس، أسمي خالِد",
-            "أسمي خالِد، أَنا مُدَرِّس"
+            "أَنا مُدَرِّس، اِسْمي خالِد",
+            "اِسْمي خالِد، أَنا مُدَرِّس"
         ], 
-        w: ["أَنا", "مُدَرِّس،", "أسمي", "خالِد"] 
+        w: ["أَنا", "مُدَرِّس،", "اِسْمي", "خالِد"] 
     },
     { 
         s: [
@@ -749,7 +749,7 @@ const activitiesData = [
     { 
         s: [
             "هُو صَديقي، اِسْمُهُ أَحْمَد",
-            "اِسْمُهُ أَحْمَد، هُو صَديقِي"
+            "اِسْمُهُ أَحْمَد، هُو صَديقي"
         ], 
         w: ["هُو", "صَديقي،", "اِسْمُهُ", "أَحْمَد"] 
     },
@@ -1086,13 +1086,31 @@ const activitiesData = [
         }
 
 // --- CEVAP KONTROLÜ ---
+        /* CÜMLE SIRALA ESNEK (25.11.2026) — öğretmen: "7 soruda ikinci doğru sıra tanımlanmış ama kartlar virgüllü kesildiği
+           için o sıra kurulamıyor; öğrenci kurarsa yanlış sayılıyor" */
+        const CS_HAREKE = /[\u064B-\u0652\u0670\u0640]/g;
+        function csNorm(s) {
+            return String(s).replace(/\.$/, '').replace(/[،,]/g, ' ').replace(CS_HAREKE, '')
+                .replace(/\s+/g, ' ').trim().replace(/(^| )و (?=\S)/g, '$1و');
+        }
+        function csVavAyir(round) {      /* ikinci sırada «وَ»suz geçen kelimenin kartındaki bitişik «وَ» ayrı kart olur */
+            if (!round || !Array.isArray(round.s) || round.s.length < 2) return;
+            const yalin = x => x.replace(/[،,]/g, '').replace(CS_HAREKE, '');
+            const obur = round.s.slice(1).join(' ').split(/\s+/).map(yalin);
+            round.s[0] = round.s[0].split(' ').map(t => {
+                if (t.charAt(0) !== 'و' || t.length < 3) return t;
+                const r = t.slice(1).replace(/^\u064E/, '');
+                return obur.indexOf(yalin(r)) >= 0 ? 'وَ ' + r : t;
+            }).join(' ');
+        }
         function checkScrambleAnswer(correctAnswers) {
             const dropZone = document.getElementById('drop-zone');
             const words = Array.from(dropZone.children).map(item => item.textContent);
             const userAnswer = words.join(' ');
             
-            const cleanUserAnswer = userAnswer.replace(/\.$/, '');
-            const cleanCorrectAnswers = correctAnswers.map(s => s.replace(/\.$/, ''));
+            /* CÜMLE SIRALA ESNEK (25.11.2026): virgül, hareke ve «وَ»nın ayrık / bitişik yazılışı karşılaştırmada sayılmaz */
+            const cleanUserAnswer = csNorm(userAnswer);
+            const cleanCorrectAnswers = correctAnswers.map(csNorm);
             const isCorrect = cleanCorrectAnswers.includes(cleanUserAnswer);
             
             dropZone.classList.remove('drop-zone-correct', 'drop-zone-incorrect');
@@ -1292,6 +1310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     activitiesData.forEach(round => {
         round.w = round.w.map(word => word.trim().replace(/\.$/, ''));
         round.s = round.s.map(s_item => s_item.trim().replace(/\.$/, ''));
+        csVavAyir(round);                  /* CÜMLE SIRALA ESNEK */
     });
     
     // Mevcut Tam Ekran dinleyicileri

@@ -492,7 +492,7 @@
                             { id: 29, arabic: 'اِسْمي', turkish: 'Benim adım' },
                             { id: 30, arabic: 'مِن أَيْن أَنْتَ؟', turkish: 'Nerelisin? (e)' },
                             { id: 31, arabic: 'مِن أَيْن أَنْتِ؟', turkish: 'Nerelisin? (k)' },
-                            { id: 32, arabic: 'أَنا مِن أَنْقَرَة', turkish: 'Ben Ankara\'lıyım' },
+                            { id: 32, arabic: 'أَنا مِن أَنْقَرَة', turkish: 'Ben Ankaralıyım' },
                             { id: 33, arabic: 'تَشَرَّفْتُ', turkish: 'Memnun oldum!' },
                             { id: 34, arabic: 'فُرْصَة سَعيدَة', turkish: 'Memnun oldum!' },
                             { id: 35, arabic: 'شُكْرًا', turkish: 'Teşekkürler!' },
@@ -700,7 +700,7 @@
             let wordsForGame = App.getWords(lessonKey);
             this.state.w = Utils.shuffleArray(wordsForGame).slice(0, 10);
 
-            const pairs = this.state.w.flatMap(w => [{ content: w.arabic, id: w.id, lang: 'ar' }, { content: w.turkish, id: w.id, lang: 'tr' }]);
+            const pairs = this.state.w.flatMap(w => [{ content: w.arabic, id: w.id, lang: 'ar', tr: w.turkish }, { content: w.turkish, id: w.id, lang: 'tr', tr: w.turkish }]);
             this.populateBoard(Utils.shuffleArray(pairs));
         },
         stop() {
@@ -715,6 +715,7 @@
                 const cardEl = document.createElement('div');
                 cardEl.className = 'card';
                 cardEl.dataset.id = cardData.id;
+                cardEl.dataset.lang = cardData.lang; cardEl.dataset.tr = cardData.tr || '';   /* AYNI KARŞILIK (25.11.2026) */
                 const formattedContent = cardData.content;
                 cardEl.innerHTML = `<div class="card-inner"><div class="card-face card-front"></div><div class="card-face card-back" dir="${cardData.lang === 'tr' ? 'ltr' : 'rtl'}">${formattedContent}</div></div>`;
                 cardEl.onclick = () => this.flipCard(cardEl);
@@ -733,7 +734,9 @@
                 this.state.l = true;
                 const [c1, c2] = this.state.f;
 
-                if (c1.dataset.id === c2.dataset.id) {
+                /* AYNI KARŞILIK (25.11.2026) — öğretmen: "تَشَرَّفْتُ ile فُرْصَة سَعيدَة kartlarının ikisinin de karşılığı Memnun oldum!
+                   Aynı turda çıkınca doğru eşleştirme kabul edilmiyor" → Arapça + Türkçe kart, karşılık aynıysa doğru */
+                if (c1.dataset.id === c2.dataset.id || (c1.dataset.lang !== c2.dataset.lang && c1.dataset.tr && c1.dataset.tr === c2.dataset.tr)) {
                     App.playSound('match');
                     const matchClass = this.state.c === 1 ? 'p1-match' : 'p2-match';
                     if (this.state.c === 1) this.dom.score1.textContent = ++this.state.s1;
