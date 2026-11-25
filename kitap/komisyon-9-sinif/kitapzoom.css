@@ -2006,3 +2006,6 @@ html.ds-ders .ds-ebd > .ds-yon.aktif { background: rgba(250, 204, 21, .14); box-
 /* İPLİ SAYFAYA GİT (25.11.2026) */
 #tIpGit.kip-yok { opacity: .55; }
 #tIpGit.kip-yok svg path { fill: none; stroke: currentColor; }
+
+/* DERSTE ↑↓ DÜĞMESİ YOK (25.11.2026) — öğretmen: "sunum modunda alt üst ok kaybolmuyor": derste ↑ ↓ çalışmadığı için ekrandaki düğmeleri de gizli */
+html.ds-ders .zOk-yukari, html.ds-ders .zOk-asagi { display: none !important; }
