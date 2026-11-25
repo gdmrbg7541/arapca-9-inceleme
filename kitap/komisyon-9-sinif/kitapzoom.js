@@ -8406,7 +8406,8 @@
       el.title = (p.ad || (vj + 1) + '. kısım') + ' — dokun: bu kısım yeniden çalsın';
       el.setAttribute('aria-label', el.title);
       el.classList.remove('ks-yeni'); void el.offsetWidth; el.classList.add('ks-yeni');   /* her yeni kısımda kısa parlama */
-      if (!DS.aktif && K.el && !K.el.paused && !dsIzleyen()) dsKisimYakin(K, p);   /* ŞERİT İKİ KENAR: kısım çalarken mutlaka yaklaş */
+      if (!DS.aktif && K.el && !K.el.paused && !dsIzleyen()) dsKisimYakin(K, p);
+      else if (DS.aktif && K.el && !K.el.paused && !K.sur) ksTakip(K, vj, false);   /* SARI VURGUYU TAKİP: çalarken ekran dışına çıktıysa */   /* ŞERİT İKİ KENAR: kısım çalarken mutlaka yaklaş */
     }
     /* BÖLÜM ARASI BEKLE (03.11.2026) — öğretmen: "bazı seslerde bölümler arasında istenen kadar gecikme ekleyebilelim":
        bölümün "bk" saniyesi varsa sonunda durur, geri sayar, sürer. */
@@ -8471,6 +8472,7 @@
       K.tekSon = Math.max(+p.b + 0.1, +p.s - 0.08);                    /* KISIM İLERİ: sonraki kısmın başına taşmasın (vurgu çalanda kalsın) */
       K.tekI = i;                                                       /* KISIM CEVAP: biten kısım */
       ksDongu();
+      if (DS.aktif) ksTakip(K, i, true);                               /* SARI VURGUYU TAKİP */
       if (!DS.aktif && kzDokunBuyut()) dsKisimYakin(K, p);   /* DOKUNUNCA BÜYÜT */                               /* KISMA DOKUNUNCA YAKINLAŞMA (02.11.2026) */
     }
     /* KISMA DOKUNUNCA YAKINLAŞMA (02.11.2026) — öğretmen: "yakınlaştırma varsa o da
@@ -8529,9 +8531,49 @@
         return true;
       } catch (e) { return false; }
     }
+    /* SARI VURGUYU TAKİP (25.11.2026) — öğretmen: "ses kısmından bi bölüme tıklanırsa oraya ait büyüme hemen değişsin sarı
+       vurguyu takip etsin": kısma dokununca o kısmın bandı (yoksa sarı vurguyu içeren bant, o da yoksa vurgunun kendisi);
+       derste çalarken vurgu ekran dışına çıkarsa onu içeren banda kayılır. */
+    var KS_TKP = 0;
+    function ksTakipBant(K, p, zorla) {
+      var s = p.sayfa, L = dsAdimlar(s), v = ksVurguVar(p), hd = null, j, x;
+      var icer = function (b) { return dsBantVar(b) && +b.y1 <= +p.y1 + 1 && +b.y2 >= +p.y2 - 1; };
+      if (L.length && zorla) hd = dsKisimHedef(K, p, L);
+      if (hd && v && !icer(hd)) hd = null;
+      if (!hd && v) {
+        for (j = 0; j < L.length; j++) { x = L[j]; if (x && icer(x) && (!hd || (+x.y2 - +x.y1) < (+hd.y2 - +hd.y1))) hd = x; }
+        if (!hd) hd = { x1: 0, x2: 100, y1: Math.max(0, +p.y1 - 3), y2: Math.min(100, +p.y2 + 3) };
+      }
+      return hd;
+    }
+    function ksTakip(K, i, zorla) {
+      if (zorla === undefined) zorla = true;
+      clearTimeout(KS_TKP);
+      KS_TKP = setTimeout(function () {                               /* sarma ve derste adım değişimi bitsin, sonra */
+        try {
+          var p = K.P[i]; if (!p || !(p.sayfa >= 1) || dsIzleyen() || !dsVeri()) return;
+          if (!DS.aktif && !kzDokunBuyut()) return;
+          if (!zorla && (!ksVurguVar(p) || dsYerGorunur(p.sayfa, p))) return;   /* çalarken: vurgu ekrandaysa dokunma */
+          var hd = ksTakipBant(K, p, zorla); if (!hd) return;
+          DS_KY = p.sayfa + ':' + [hd.x1, hd.y1, hd.x2, hd.y2].join(',');
+          dsYakinlas(p.sayfa, hd);
+        } catch (e) { }
+      }, zorla ? 260 : 60);
+    }
+    /* SES KAPANINCA DERS BİTER (25.11.2026) — öğretmen: "sesi kapatınca ders modundan çıksın": ses çubuğunun ✕'ine öğretmen
+       basınca ders modu kapanır (ders kendi içinde etkinlik değiştirirken sesi kapatması saymaz: yalnız gerçek dokunuş) */
+    document.addEventListener('click', function (e) {
+      try {
+        if (!e.isTrusted || !DS.aktif || dsIzleyen()) return;
+        var t = e.target; if (!t || !t.closest) return;
+        var kb = t.closest('#calarKapat') || (MD.calar && MD.calar.contains(t) ? t.closest('.kapat') : null);
+        if (kb) setTimeout(function () { if (DS.aktif) dsKapat(true); }, 0);
+      } catch (x) { }
+    }, true);
     function ksKisma(K, i) {                                          /* kısma dokunuldu: o kısmın başından çal */
       var p = K.P[i]; if (!p) return;
       if (dsKcSeritEngel(K, i)) return;                              /* KISIM BEKLE ŞERİTTE DE */
+      ksTakip(K, i, true);                                           /* SARI VURGUYU TAKİP */
       if (K.konum && ZS.el === K.el && ZS.P[i]) { zsTek(i); ksGuncelle(K); return; }   /* konum: o parça, sonunda durur */
       ksGit(K, Math.max(0, p.b - 0.02), true);
     }
