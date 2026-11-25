@@ -3045,10 +3045,12 @@
       return L[0];
     }
     function kkTutBas(e) {
-      var t = e.target.closest && e.target.closest('[data-kk="tut"]');
+      /* KÜÇÜK ŞERİT TAŞINIR (25.11.2026) — öğretmen: "kalem popup ını küçültünce ekranda taşıyamıyorum": küçükken yuvarlak düğme tutamaktır */
+      var t = e.target.closest && (e.target.closest('[data-kk="tut"]') || (KK.kucuk && e.target.closest('[data-kk="kapa"]')));
       if (!t || !KK.palet || KK.palet.hidden || (e.pointerType === 'mouse' && e.button !== 0)) return;
-      e.preventDefault();
-      kkTas = { id: e.pointerId, x: e.clientX, y: e.clientY, oynadi: false, t: t };
+      var kp = t.getAttribute('data-kk') === 'kapa';
+      if (!kp) e.preventDefault();
+      kkTas = { id: e.pointerId, x: e.clientX, y: e.clientY, oynadi: false, t: t, kp: kp };
       try { t.setPointerCapture(e.pointerId); } catch (x) { }
     }
     function kkTutOynat(e) {
@@ -3081,8 +3083,9 @@
       if (!T || e.pointerId !== T.id) return;
       kkTas = null;
       if (p) p.classList.remove('kk-tasiniyor');
+      if (T.oynadi) KK.tasBitti = Date.now();                     /* KÜÇÜK ŞERİT TAŞINIR: sürükleme sonrası tıklama sayılmaz */
       if (!T.oynadi) {                                            /* dokunuş: çift dokunuş → yine kendisi yer seçer */
-        if (e.type !== 'pointerup') return;
+        if (e.type !== 'pointerup' || T.kp) return;
         var simdi = Date.now();
         if (simdi - kkTutSon < 420) {
           kkTutSon = 0;
@@ -3155,7 +3158,7 @@
       }
       else if (k === 'geri') { if (!kkYanki(e)) kkGeriAl(); }
       else if (k === 'ileri') { if (!kkYanki(e)) kkIleriAl(); }
-      else if (k === 'kapa') { KK.kucuk = !KK.kucuk; kkTercihYaz(); kkPaletGuncelle(); kkSeritYerlestir(); }
+      else if (k === 'kapa') { if (Date.now() - (KK.tasBitti || 0) < 500) return; KK.kucuk = !KK.kucuk; kkTercihYaz(); kkPaletGuncelle(); kkSeritYerlestir(); }
       else if (k === 'takip') {
         if (kkYanki(e)) return;                                 /* Sınıf Ekranı: kumandanın tıkı tahtanın tercihini değiştirmesin */
         if (KK.sabit) { KK.sabit = null; KK.takip = true; } else KK.takip = !KK.takip;   /* taşınmış şerit: açınca yine kendisi yer seçer */

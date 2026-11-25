@@ -1982,3 +1982,11 @@ html.ds-ders .ds-ebd > .ds-yon.aktif { background: rgba(250, 204, 21, .14); box-
 /* EŞLEŞTİRME SEÇEREK (25.11.2026) */
 .ds-cvd > i.dv-es.dv-secili { outline: 3px solid #F59E0B; outline-offset: 2px; background: rgba(245, 158, 11, .22) !important; border-radius: 8px; }
 .ds-cvd > i.dv-es.dv-yanlis { outline: 3px solid #DC2626; outline-offset: 2px; background: rgba(220, 38, 38, .14) !important; border-radius: 8px; }
+
+/* KÜÇÜK ŞERİT TAŞINIR (25.11.2026): küçük şeridin yuvarlak düğmesi sürüklenir */
+.kk-serit.kk-kucuk .kk-kapa { touch-action: none; cursor: grab; }
+.kk-serit.kk-kucuk.kk-tasiniyor .kk-kapa { cursor: grabbing; }
+/* SAYFAYA YAZILANLAR İNCE (25.11.2026) — öğretmen: "bold olmasın kitapta hiçbir yazı · rakamlar da": kalemle konan rakam ve yazı, ders işaretleri Arakom, normal kalınlık */
+.kk-m .kk-ce-ar, .ds-isaret .kk-ce-ar, .yuz > .kk-ce-girdi, .kk-m .kk-ce-tr, .ds-isaret .kk-ce-tr, .yuz > .kk-ce-girdi[dir="ltr"] { font-family: Arakom, 'Geeza Pro', serif !important; font-weight: 400 !important; font-synthesis: none; }
+.kk-s.kk-ce .kk-ce-n { font-family: Arakom, 'Geeza Pro', serif !important; font-weight: 400 !important; font-synthesis: none; }
+.ds-dv > i > .dvm-sayi text { font-family: Arakom, 'Geeza Pro', serif !important; font-weight: 400 !important; font-synthesis: none; }
