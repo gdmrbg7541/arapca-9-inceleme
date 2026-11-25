@@ -644,3 +644,26 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(kur, 0); }); else setTimeout(kur, 0);
 })();
+
+/* KAREKOD ANİMASYONU (25.11.2026) · KAREKOD DALGA (25.11.2026) — öğretmen: "karekodun yukarısından aşağısına bi kere tarama
+   olsun sonra bi tane de dokunma vurgusu ama aşırı olmasın ... her sayfa açıldığında bi kere oynasın sadece" · "hala birden
+   fazla, ve son büyüyüp küçülen kutu vurgusunu değiştir": sayfa başına bir kez, kutular birlikte; tarama + dokunma dalgası. */
+(function () {
+  var sonSayfa = null, zt = 0, z = 0;
+  function gorunen(b) { var r = b.getBoundingClientRect(); return r.width > 4 && r.height > 4 && r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight && (function () { var e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && (e === b || b.contains(e)); })(); }
+  function sayfaAd() { var s = document.getElementById('sayfaEt'); return s ? s.textContent.trim() : ''; }
+  function oyna() {
+    var ad = sayfaAd(); if (ad === sonSayfa) return;                        /* aynı sayfa: yeniden oynamaz */
+    if (document.documentElement.classList.contains('ds-ders')) return;     /* sunum (ders) modunda vurgu yok */
+    var L = [].filter.call(document.querySelectorAll('.nokta.kz-qr'), gorunen);
+    if (!L.length) return;
+    sonSayfa = ad;
+    [].forEach.call(document.querySelectorAll('.kz-qr-oyna'), function (b) { b.classList.remove('kz-qr-oyna'); });
+    void document.body.offsetWidth;
+    L.forEach(function (b) { b.classList.add('kz-qr-oyna'); });
+    clearTimeout(z); z = setTimeout(function () { L.forEach(function (b) { b.classList.remove('kz-qr-oyna'); }); }, 1600);
+  }
+  function sonra() { clearTimeout(zt); zt = setTimeout(oyna, 700); }
+  try { new MutationObserver(sonra).observe(document.getElementById('sayfaEt'), { childList: true, characterData: true, subtree: true }); } catch (e) { }
+  var dene = 0; (function ilk() { oyna(); if (sonSayfa === null && ++dene < 30) setTimeout(ilk, 1000); })();   /* tanıtım kapanınca da */
+})();
