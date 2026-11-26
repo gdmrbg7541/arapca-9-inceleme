@@ -4340,6 +4340,12 @@
           ES[k].ps.push({ b: r, ot: m[1] + ':' + e[1 - z] });
         });
       });
+      /* EŞLEŞTİRME FAZLA UÇ (27.11.2026) — öğretmen: "fazladan olan görsellerde vurgu yok bu kopya gibi olur hepsi vurgulu olsun":
+         hiçbir eşe girmeyen uç da vurgulanır; eşleştirilmeye çalışılınca yanlış sayılır */
+      (Q || []).forEach(function (q, qi) {
+        if (!q || !Array.isArray(q.p) || !q.p.length || !Array.isArray(q.x)) return;
+        q.x.forEach(function (r, xi) { var k = qi + ':' + xi; if (r && !ES[k]) { ES[k] = { k: k, r: r, ps: [] }; L.push(ES[k]); } });
+      });
       return L;
     }
     function dsCvVurguKatman(s, a, j, ac, i, m) {                      /* dsKatmanlar: kendi adımında vurgu; geçince hepsi açık */
@@ -5801,6 +5807,52 @@
       DS.tabanSonra = taban;
       dsAc(s, g.bas, true);
     }
+    /* SES DÜĞMESİ DERSİ AÇAR (26.11.2026) — öğretmen: "bi karekoda tanımlı ses var diyelim, eğer o ses dosyası zaten sunum
+       modunda varsa yönergeye basmışçasına sunum modunu açsın": ses düğmesinin sesi bir etkinliğin ders adımlarındaysa ders
+       o etkinliğin başından açılır; değilse ses eskisi gibi çalar. */
+    function dsSesEtkinlik(k, sy) {
+      var V = kok.KITAP_VERI || {}, Kn = V.kaynak || [], kay = Kn[k];
+      if (!kay || kay.tur !== 'ses') return null;
+      var an = kay.yol ? ksAnah(kay.yol) : '', S = [], s0 = +kay.s || 0, f = (V && +V.fark) || 0, sec = null;
+      [sy || 0, s0 + f, s0, s0 + f - 1, s0 + f + 1].forEach(function (x) { if (x >= 1 && S.indexOf(x) < 0) S.push(x); });
+      kkGorunen().forEach(function (x) { if (S.indexOf(x) < 0) S.push(x); });
+      S.some(function (s) {
+        var L = dsAdimlar(s); if (!L.length) return false;
+        return dsEtkDolu(s).some(function (g) {
+          for (var i = g.bas; i <= g.son; i++) {
+            var a = L[i]; if (!a || a.t !== 'kaynak' || a.k == null) continue;
+            var b = Kn[+a.k];
+            if (+a.k === +k || (an && b && b.yol && ksAnah(b.yol) === an)) { sec = { s: s, g: g }; return true; }
+          }
+          return false;
+        });
+      });
+      return sec;
+    }
+    /* YALNIZ DÜĞMEYE DOKUNUŞ (26.11.2026) — öğretmen: "sunum moduna girebilmek için sarı vurgulu yönergeye veya ilgili karekoda
+       basmak dışında sunum modu başlatılamasın": parmak / fare ses düğmesinin üstüne inmişse (kitabın kendi basışı değil) */
+    var DS_SDB = null;
+    document.addEventListener('pointerdown', function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('.nokta.n-ses') : null;
+      DS_SDB = b ? { b: b, t: Date.now(), x: e.clientX, y: e.clientY } : null;
+    }, true);
+    document.addEventListener('click', function (e) {
+      try {
+        if (!e.isTrusted) return;                                        /* dersin kendisi sesi düğmeye basarak açar: o geçer */
+        var b = e.target && e.target.closest ? e.target.closest('.nokta.n-ses') : null;
+        if (!b || !b.dataset || b.dataset.k == null) return;
+        var bas = DS_SDB; DS_SDB = null;
+        if (!bas || bas.b !== b || Date.now() - bas.t > 1500) return;   /* YALNIZ DÜĞMEYE DOKUNUŞ: dokunuş başka yerdeydi */
+        /* SES DÜĞMESİ: TAM ÜSTÜNDE (27.11.2026): dokunmatikte tarayıcı yakındaki düğmeyi seçer; parmak kutunun içinde değilse ders açılmaz, ses de çalmaz */
+        var rr = b.getBoundingClientRect();
+        if (!(bas.x >= rr.left - 3 && bas.x <= rr.right + 3 && bas.y >= rr.top - 3 && bas.y <= rr.bottom + 3)) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); return; }
+        if (!dsVeri() || !dsYetki() || dsIzleyen()) return;
+        var yz = b.closest('.yuz'), h = dsSesEtkinlik(+b.dataset.k, yz ? +yz.getAttribute('data-sayfa') : 0); if (!h) return;
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+        try { dsSorKapat(); } catch (x) { }
+        dsEbBasla(h.s, h.g);
+      } catch (x) { }
+    }, true);
     /* ETKİNLİK DEĞİŞİNCE (04.11.2026) — öğretmen: "bi etkinlik başlatılmışken diğer bi etkinliğin yönergesine
        tıkladığımda mevcut etkinlik otomotik kapansın, diğerinde ses varsa o başlasın". */
     function dsEtkKapat() {
@@ -6355,7 +6407,7 @@
       if (!a || (!a.kc && !isr)) return;
       var L = dsAdimlar(s), k0 = L.indexOf(a), j = -1;
       for (var k = k0 + 1; k < L.length && L[k] && L[k].t !== 'eb'; k++) if (L[k].t === 'cevap' && dsCvMod(L[k])) { j = k; break; }
-      DS_KC = { s: s, ds: DS.s, e: dsKsEb(), src: yol, j: j, bek: -1, t: 0, isr: isr, es: true, say: 0 };
+      DS_KC = { s: s, ds: DS.s, e: dsKsEb(), src: yol, j: j, bek: -1, t: 0, isr: isr, es: true, say: 0, a: a };   /* KISIM CEVAP SEÇENEĞİ: a.kcm */
     }
     function dsKcGecerli() { return !!(DS_KC && DS.aktif && !dsIzleyen() && DS_KC.ds === DS.s && DS_KC.e === dsKsEb()); }
     function dsKcBirimler(i) {                                         /* bu kısmın kutusuna düşen cevaplar */
@@ -6385,6 +6437,7 @@
     function dsKcBitti(src, i) {                                       /* bir kısım sonuna dek çaldı */
       if (!DS_KC || i == null || ksAnah(src) !== ksAnah(DS_KC.src)) return;
       if (!dsKcGecerli()) { DS_KC = null; return; }
+      if (dsKcMod(i)) return;                                           /* KISIM CEVAP SEÇENEĞİ: kendiliğinden aç / beklemeden sür */
       if (DS_KC.isr) {                                                  /* KISIM BEKLE (11.11.2026): yalnız işaretli kısım bekler */
         var Pk = ksKisimlar(DS_KC.src)[i];
         if (!Pk || !Pk.cb) { dsKcSonraki(i, 450); return; }
@@ -6395,6 +6448,23 @@
       }
       if (DS_KC.j < 0 || DS.i < DS_KC.j || dsKcTamam(i)) { dsKcSonraki(i, 450); return; }   /* cevabı yok / açık: sıradaki */
       DS_KC.bek = i;                                                    /* cevap bekleniyor */
+    }
+    /* KISIM CEVAP SEÇENEĞİ (27.11.2026) — öğretmen: "her kısımdan sonra cevabı dokunarak aç sonra diğerine geç veya ses kısmı
+       bittikten sonra cevabı otomatik aç sonra diğerine geç": Cevap panelindeki «Ses kısımları» seçimi (ses adımında kcm) */
+    function dsKcMod(i) {
+      var md = DS_KC && DS_KC.a && DS_KC.a.kcm; if (md !== 'oto' && md !== 'akis') return false;
+      if (md === 'akis') { DS_KC.bek = -1; dsKcSonraki(i, 450); return true; }
+      var B = DS_KC.j >= 0 && DS.i >= DS_KC.j ? dsKcBirimler(i) : [], L = DS_KC.j >= 0 ? dsCvL(DS_KC.s, DS_KC.j) : [], yeni = 0;
+      DS_KC.bek = -1;
+      B.forEach(function (b) { if (L.indexOf(b) < 0) { dsCvAc(DS_KC.s, DS_KC.j, b, true); yeni++; } });
+      if (yeni) try { dsOdakBirim(DS_KC.s, DS_KC.j, B[0]); } catch (e) { }
+      dsKcSonraki(i, yeni ? 1600 : 450); return true;
+    }
+    function dsKcAdim() {                                              /* o anki etkinliğin kısımlı + cevaplı ses adımı */
+      if (!DS.aktif || dsIzleyen()) return null;
+      var L = dsAdimlar(DS.s), e = dsKsEb(), j;
+      for (j = Math.max(0, e + 1); j < L.length && !(L[j] && L[j].t === 'eb'); j++) if (L[j] && L[j].t === 'kaynak' && L[j].k != null && (L[j].kc || dsKcIsaretli(L[j].k))) return L[j];
+      return null;
     }
     function dsKcErken(s, j, b) {                                      /* SIRASI GELMEYEN: kısma bağlı (cv.ks) cevabın kısmı henüz çalmadı mı */
       if (!dsKcGecerli() || DS_KC.s !== s || DS_KC.j !== j) return false;
@@ -6741,6 +6811,7 @@
     var DS_CP_AC = [['dok', 'dokununca'], ['tek', 'madde madde'], ['oto', 'kendiliğinden'], ['hepsi', 'hepsi birden']];
     var DS_CP_AV = [['dalga', 'dalga'], ['nabiz', 'nabız'], ['isik', 'ışık'], ['cerceve', 'çerçeve']];
     var DS_CP_RK = [['', 'kitabın'], ['#ee1b22', 'kırmızı'], ['#1747a6', 'mavi'], ['#1e8e3e', 'yeşil'], ['#1f2937', 'siyah'], ['#7c3aed', 'mor']];
+    var DS_CP_KC = [['bekle', 'dokununca aç, sonra sıradaki'], ['oto', 'kendiliğinden aç, sonra sıradaki'], ['akis', 'beklemeden sür']];   /* KISIM CEVAP SEÇENEĞİ */
     var DS_CP_HZ = [[0.5, 'çok yavaş'], [0.75, 'yavaş'], [1, 'orta'], [1.5, 'hızlı'], [2, 'çok hızlı']];
     function dsCpAdim() {                                              /* o anki etkinliğin cevap adımı (veri olan) */
       if (!DS.aktif || dsIzleyen() || DS.i < 0) return -1;
@@ -6761,6 +6832,8 @@
         '<div class="ds-cp-sat"><i>Açılış</i>' + DS_CP_AC.map(function (b) { return dsCpTus('ac', b[0], b[1], ac === b[0]); }).join('') + '</div>' +
         (ac !== 'hepsi' ? '<div class="ds-cp-sat"><i>Vurgu</i>' + DS_CP_AV.map(function (b) { return dsCpTus('av', b[0], b[1], av === b[0]); }).join('') + '</div>' : '') +
         '<div class="ds-cp-sat"><i>Renk</i>' + DS_CP_RK.map(function (b) { return dsCpTus('rk', b[0], b[1], rk === b[0], b[0] ? '<em style="background:' + b[0] + '"></em>' : ''); }).join('') + '</div>' +
+        (function () { var ka = dsKcAdim(); if (!ka) return ''; var km = /^(oto|akis)$/.test(ka.kcm || '') ? ka.kcm : 'bekle';   /* KISIM CEVAP SEÇENEĞİ */
+          return '<div class="ds-cp-sat"><i>Ses kısımları</i>' + DS_CP_KC.map(function (b) { return dsCpTus('kcm', b[0], b[1], km === b[0]); }).join('') + '</div>'; })() +
         (iz ? '<div class="ds-cp-sat"><i>Yazı hızı</i>' + DS_CP_HZ.map(function (b) { return dsCpTus('hz', b[0], b[1], Math.abs(hz - b[0]) < 0.001); }).join('') + '</div>' : '') +
         '</div>';
       DS_CP.el.innerHTML = h; DS_CP.el.classList.toggle('acik', DS_CP.acik);
@@ -6777,6 +6850,10 @@
       if (t === 'ac') { if (v === 'dok') delete a.ac; else a.ac = v; DS.cvDur = null; dsCpYenile(j, true); }
       else if (t === 'av') { if (v === 'dalga') delete a.av; else a.av = v; dsCpYenile(j, false); }
       else if (t === 'rk') { if (v) a.rk = v; else delete a.rk; dsCpYenile(j, false); }
+      else if (t === 'kcm') {                                           /* KISIM CEVAP SEÇENEĞİ: bekleyen kısım varsa hemen */
+        var ka = dsKcAdim(); if (ka) { if (v === 'bekle') delete ka.kcm; else ka.kcm = v; }
+        if (dsKcGecerli() && DS_KC.bek >= 0) dsKcMod(DS_KC.bek);
+      }
       else if (t === 'hz') { (dsCevapVeri(a) || []).forEach(function (q) { if (q && q.t === 'iz') q.hz = +v; }); dsCpYenile(j, false); }
       dsCpCiz(j);
     }
@@ -8181,7 +8258,9 @@
         Yi = Yi.map(function (y, j) { var ok = y === true || (y === 'fiil' && j <= 3 && fy < 0); if (ok && fy < 0) fy = j; return ok; });
         P.forEach(function (p, j) {                                     /* yönergeden önceki ünite / ders başlığı: «Başlık» */
           var bas = fy > j && (/^\s*ba[şs]l[ıi]k\s*$/i.test(p.ad || '') || /^[\s\u064B-\u0652]*ال[\u064B-\u0652]*(?:و[\u064B-\u0652]*[اح]|د[\u064B-\u0652]*ر[\u064B-\u0652]*س)/.test(p.ad || ''));   /* KISIMLARDA RAKAM (06.11.2026): adı «Başlık» */
-          K.et.push(Yi[j] ? 'Yönerge' : bas ? 'Başlık' : String(++n));
+          /* KISIM ADI ÇUBUKTA (26.11.2026) — öğretmen: "o kısma bi şey yazınca kısımda görünsün": adı varsa ad, yoksa sıra numarası */
+          var adx = String(p.ad || '').trim(), adOk = adx && !/^\d+\.?\s*(kısım|konum)?$/i.test(adx);
+          K.et.push(Yi[j] ? 'Yönerge' : bas ? 'Başlık' : (++n, adOk ? adx : String(n)));
         });
       }
       return K.et[i] != null ? K.et[i] : String(i + 1);
