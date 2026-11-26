@@ -2009,3 +2009,25 @@ html.ds-ders .ds-ebd > .ds-yon.aktif { background: rgba(250, 204, 21, .14); box-
 
 /* DERSTE ↑↓ DÜĞMESİ YOK (25.11.2026) — öğretmen: "sunum modunda alt üst ok kaybolmuyor": derste ↑ ↓ çalışmadığı için ekrandaki düğmeleri de gizli */
 html.ds-ders .zOk-yukari, html.ds-ders .zOk-asagi { display: none !important; }
+
+/* KELİME AVI LİSTE (27.11.2026): her kelime ayrı renk; listedeki adı da açılınca aynı renk */
+.ds-vek .cv-kav.kav-0 { background: rgba(255, 206, 64, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-0.dv-isaretli { background-color: rgba(255, 206, 64, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-1 { background: rgba(110, 205, 120, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-1.dv-isaretli { background-color: rgba(110, 205, 120, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-2 { background: rgba(100, 170, 245, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-2.dv-isaretli { background-color: rgba(100, 170, 245, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-3 { background: rgba(245, 130, 185, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-3.dv-isaretli { background-color: rgba(245, 130, 185, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-4 { background: rgba(255, 150, 70, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-4.dv-isaretli { background-color: rgba(255, 150, 70, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-5 { background: rgba(175, 135, 235, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-5.dv-isaretli { background-color: rgba(175, 135, 235, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-6 { background: rgba(70, 205, 205, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-6.dv-isaretli { background-color: rgba(70, 205, 205, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-7 { background: rgba(240, 105, 105, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-7.dv-isaretli { background-color: rgba(240, 105, 105, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-8 { background: rgba(160, 205, 60, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-8.dv-isaretli { background-color: rgba(160, 205, 60, .45) !important; border-radius: .6cqw; }
+.ds-vek .cv-kav.kav-9 { background: rgba(205, 165, 115, .55); }
+.yuz > .ds-cvd > i.dv-kav.kav-9.dv-isaretli { background-color: rgba(205, 165, 115, .45) !important; border-radius: .6cqw; }

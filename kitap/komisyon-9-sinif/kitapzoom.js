@@ -4163,6 +4163,13 @@
       try { Object.defineProperty(q, '_kav', { value: ok, enumerable: false, configurable: true, writable: true }); } catch (e) { }
       return ok;
     }
+    /* KELİME AVI LİSTE (27.11.2026): çapraz kelime kare/daire değil, kelime boyunca eğik kapsül */
+    function dsKavCiz(X, w, ek, b, oran) {
+      var a = X[w[0]], z = X[w[w.length - 1]], ax = a[0] + a[2] / 2, ay = a[1] + a[3] / 2, zx = z[0] + z[2] / 2, zy = z[1] + z[3] / 2;
+      if (Math.abs(ax - zx) < a[2] * 0.4 || Math.abs(ay - zy) < a[3] * 0.4) return dsCvKutu(dsKavKutu(X, w), ek, '', b);
+      var dx = zx - ax, dy = (zy - ay) * oran, L = Math.sqrt(dx * dx + dy * dy) + a[2] * 1.15, t = a[3] * 1.05, cx = (ax + zx) / 2, cy = (ay + zy) / 2;
+      return dsCvKutu([cx - L / 2, cy - t / 2, L, t], ek, '', b).replace('style="', 'style="rotate:' + (Math.atan2(dy, dx) * 180 / Math.PI).toFixed(2) + 'deg;');
+    }
     function dsKavKutu(X, w) {
       var x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
       w.forEach(function (i) { var r = X[i]; x1 = Math.min(x1, r[0]); y1 = Math.min(y1, r[1]); x2 = Math.max(x2, r[0] + r[2]); y2 = Math.max(y2, r[1] + r[3]); });
@@ -4249,7 +4256,12 @@
       var R = [];
       dsCvBirimler(Q).forEach(function (u, r) {
         var m = /^(\d+):(p?)(\d+)$/.exec(u.k), q = Q[+m[1]], X = q.x || [];
-        if (q.t === 'pick' && dsKav(q)) return;                         /* KELİME AVI: harflerde vurgu yok */
+        if (q.t === 'pick' && dsKav(q)) {                               /* KELİME AVI: harflerde vurgu yok */
+          /* KELİME AVI LİSTE (27.11.2026): listedeki kelimeye dokununca ızgaradaki kapsülü açılır */
+          var wi = -1; dsKav(q).forEach(function (w, n) { if (w[0] === +m[3]) wi = n; });
+          if (wi >= 0 && Array.isArray(q.kl) && q.kl[wi]) R.push({ b: r, kv: wi, x: [q.kl[wi]] });
+          return;
+        }
         if (m[2]) { var e = q.p[+m[3]]; R.push({ b: r, es: 1, x: [X[e[0]], X[e[1]]] }); } else R.push({ b: r, x: [X[+m[3]]] });
       });
       Q.forEach(function (q) { if (q && q.t === 'pick' && !dsKav(q)) (q.x || []).forEach(function (x, j) { if (x && (q.ok || []).indexOf(j) < 0) R.push({ b: 'y', x: [x] }); }); });
@@ -4265,7 +4277,7 @@
           if (!r) return;
           var e = document.createElement('i'), pd = 0.35;
           e.style.left = (r[0] - pd) + '%'; e.style.top = (r[1] - pd) + '%'; e.style.width = (r[2] + 2 * pd) + '%'; e.style.height = (r[3] + 2 * pd) + '%';
-          e.setAttribute('data-b', String(p.b)); e.className = 'dv-dok';
+          e.setAttribute('data-b', String(p.b)); e.className = 'dv-dok' + (p.kv != null ? ' dv-kav kav-' + (p.kv % 10) : '');   /* KELİME AVI LİSTE */
           e.addEventListener('pointerdown', function (ev) { ev.stopPropagation(); e._dv = { x: ev.clientX, y: ev.clientY, t: Date.now() }; });
           e.addEventListener('click', function (ev) {
             ev.preventDefault(); ev.stopPropagation();
@@ -4431,7 +4443,7 @@
       Q.forEach(function (q, qi) {
         if (!q) return;
         var X = q.x || [], B = function (i) { return rk[qi + ':' + i]; };
-        if (q.t === 'pick' && dsKav(q)) dsKav(q).forEach(function (w) { h += dsCvKutu(dsKavKutu(X, w), 'cv-fill cv-kav', '', B(w[0])); });   /* KELİME AVI */
+        if (q.t === 'pick' && dsKav(q)) dsKav(q).forEach(function (w, n) { h += dsKavCiz(X, w, 'cv-fill cv-kav kav-' + (n % 10), B(w[0]), oran); });   /* KELİME AVI LİSTE: renk · çapraz kelime eğik kapsül */   /* KELİME AVI */
         else if (q.t === 'pick') (q.ok || []).forEach(function (i) { var r = X[i], m = q.m || 'ring'; if (r) h += dsCvKutu(r, 'cv-' + m, m === 'tick' ? DS_CV_TIK : '', B(i)); });
         else if (q.t === 'tf') X.forEach(function (r, i) { if (!r) return; var d = +(q.a || [])[i] === 1; h += dsCvKutu(r, d ? 'cv-dogru' : 'cv-yanlis', d ? DS_CV_TIK : DS_CV_CARPI, B(i)); });
         else if (q.t === 'shape') X.forEach(function (r, i) { var sk = DS_CV_SEKIL[(q.a || [])[i]]; if (r && sk) h += dsCvKutu(r, 'cv-sekil', '<svg viewBox="0 0 40 40" aria-hidden="true">' + sk + '</svg>', B(i)); });
