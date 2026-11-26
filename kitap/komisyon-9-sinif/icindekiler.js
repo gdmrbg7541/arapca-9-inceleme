@@ -1,6 +1,5 @@
 /* Meb/Komisyon 9 Flipbook/kitap/komisyon-9-sinif/icindekiler.js — İçindekiler: sayfa bağlantıları ve konular. Ders Tezgâhı yazar (_kaynak/arac/araclar.html#ders).
    Herkese açık (öğrenci de yükler). Hedef s = basılı sayfa (f = flip sırası); baglanti anahtarı = bağlantının durduğu sayfanın flip sırası. */
-/* KISIM PADLET (27.11.2026): s.40/19, 40/20, 41/21, 66/1 kısımları yeniden */
 window.KITAP_ICINDEKILER = {
   "surum": 1,
   "kitap": "komisyon-9-sinif",
@@ -1145,9 +1144,9 @@ window.KITAP_ICINDEKILER = {
     ],
     "https://kidefarapca.com/kidefarapca-materyal-9/9-sinif-2026-2027/ses/IHL9_S51_E5_SES043.mp3": [
       { "b": 0, "s": 8.47, "ad": "Yönerge", "x1": 28.6, "y1": 66.5, "x2": 93.5, "y2": 70.1, "sayfa": 51 },
-      { "b": 8.47, "s": 13.85, "x1": 50.3, "y1": 75.1, "x2": 53.1, "y2": 78.9, "sayfa": 51 },
-      { "b": 13.85, "s": 18.85, "x1": 35.2, "y1": 75.1, "x2": 38, "y2": 78.9, "sayfa": 51 },
-      { "b": 18.85, "s": 22.96, "x1": 19.8, "y1": 75.1, "x2": 22.6, "y2": 78.9, "sayfa": 51 }
+      { "b": 8.47, "s": 13.85, "el": 1, "x1": 47.3, "y1": 73.9, "x2": 56.9, "y2": 91.1, "sayfa": 51 },
+      { "b": 13.85, "s": 18.85, "el": 1, "x1": 31.8, "y1": 73.9, "x2": 41.4, "y2": 91.1, "sayfa": 51 },
+      { "b": 18.85, "s": 22.96, "el": 1, "x1": 16.6, "y1": 73.6, "x2": 26.2, "y2": 90.8, "sayfa": 51 }
     ],
     "https://kidefarapca.com/kidefarapca-materyal-9/9-sinif-2026-2027/ses/IHL9_S57_E1_SES044.mp3": [
       { "b": 0, "s": 9.45, "ad": "Yönerge", "x1": 24.5, "y1": 13.7, "x2": 93.5, "y2": 17.1, "sayfa": 57 },
