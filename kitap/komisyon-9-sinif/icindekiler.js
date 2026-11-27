@@ -1118,7 +1118,7 @@ window.KITAP_ICINDEKILER = {
     ],
     "https://kidefarapca.com/kidefarapca-materyal-9/9-sinif-2026-2027/ses/IHL9_S46_E10_SES040.mp3": [
       { "b": 0, "s": 10.79, "ad": "Yönerge", "x1": 19.8, "y1": 72.3, "x2": 93.8, "y2": 75.9, "sayfa": 46 },
-      { "b": 10.79, "s": 14.14, "x1": 38.3, "y1": 79, "x2": 60.2, "y2": 83.1, "sayfa": 46 }
+      { "b": 10.79, "s": 14.14, "el": 1, "x1": 37.6, "y1": 77.8, "x2": 63, "y2": 82.7, "sayfa": 46 }
     ],
     "https://kidefarapca.com/kidefarapca-materyal-9/9-sinif-2026-2027/ses/IHL9_S48_E3_SES041.mp3": [
       { "b": 0, "s": 4.06 },
@@ -1295,7 +1295,7 @@ window.KITAP_ICINDEKILER = {
     ],
     "https://kidefarapca.com/kidefarapca-materyal-9/9-sinif-2026-2027/ses/IHL9_S77_E15_SES056.mp3": [
       { "b": 0, "s": 10.11, "ad": "Yönerge", "x1": 29.8, "y1": 60.7, "x2": 94.6, "y2": 64.3, "sayfa": 77 },
-      { "b": 10.11, "s": 14.54, "x1": 35, "y1": 71.5, "x2": 68.1, "y2": 75.9, "sayfa": 77 }
+      { "b": 10.11, "s": 14.54, "el": 1, "x1": 32.9, "y1": 70.1, "x2": 70.7, "y2": 75.5, "sayfa": 77 }
     ],
     "https://kidefarapca.com/kidefarapca-materyal-9/9-sinif-2026-2027/ses/IHL9_S80_E3_SES057.mp3": [
       { "b": 0, "s": 3.18 },
